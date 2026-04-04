@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="single-panel-layout">
+        <section class="panel form-panel wide-panel fade-up">
+            <p class="eyebrow">Edit Task</p>
+            <h1>Update your task</h1>
+            <p class="lead">Change the due date, add more work hours, or mark the task as completed.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="post" class="form-stack">
+                <label for="title">Task title</label>
+                <input id="title" name="title" type="text" value="{{ task.title }}" required>
+
+                <label for="deadline">Due date</label>
+                <input id="deadline" name="deadline" type="date" value="{{ task.deadline or '' }}">
+
+                <label for="estimated_hours_per_task">Estimated hours</label>
+                <input id="estimated_hours_per_task" name="estimated_hours_per_task" type="number" min="1" step="1" value="{{ task.estimated_hours_per_task }}" required>
+
+                <label class="checkbox-row" for="is_completed">
+                    <input id="is_completed" name="is_completed" type="checkbox" {% if task.is_completed %}checked{% endif %}>
+                    <span>Mark as completed</span>
+                </label>
+
+                <div class="actions">
+                    <button class="button button-primary" type="submit">Save Changes</button>
+                    <a class="button button-secondary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

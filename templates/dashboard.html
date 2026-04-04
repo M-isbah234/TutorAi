@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="dashboard-shell">
+        <section class="dashboard-topbar panel fade-up">
+            <div>
+                <p class="eyebrow">Dashboard</p>
+                <h1 class="dashboard-title">Tutor-Ai</h1>
+                <p class="dashboard-user">Hello, {{ current_user.username }}</p>
+                <p class="lead">Track your subjects, deadlines, focus sessions, and AI-guided progress from one futuristic study console.</p>
+                <div class="chip-row">
+                    <span class="chip">Subjects {{ subjects|length }}</span>
+                    <span class="chip">Tasks {{ tasks|length }}</span>
+                    <span class="chip">Sessions {{ sessions|length }}</span>
+                    <span class="chip">Saved Plans {{ saved_plans_count }}</span>
+                </div>
+            </div>
+            <div class="actions">
+                <a class="button button-secondary" href="{{ url_for('add_subject') }}">Add Subject</a>
+                <a class="button button-secondary" href="{{ url_for('add_task') }}">Add Task</a>
+                <a class="button button-secondary" href="{{ url_for('planner') }}">Generate Planner</a>
+                <a class="button button-secondary" href="{{ url_for('saved_plans') }}">Saved Plans{% if saved_plans_count %} ({{ saved_plans_count }}){% endif %}</a>
+                <a class="button button-secondary" href="{{ url_for('ai') }}">AI Assistant</a>
+                <a class="button button-secondary" href="{{ url_for('upload') }}">Upload Notes</a>
+                <a class="button button-ghost" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <section class="flash-row">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        {% endwith %}
+
+        <section class="metric-grid fade-up delay-1">
+            <article class="metric-card">
+                <span class="metric-value">{{ subjects|length }}</span>
+                <strong>Active Subjects</strong>
+                <span>Organize each learning lane into its own module.</span>
+            </article>
+            <article class="metric-card">
+                <span class="metric-value">{{ tasks|length }}</span>
+                <strong>Total Tasks</strong>
+                <span>Keep every revision target, assignment, and deadline visible.</span>
+            </article>
+            <article class="metric-card">
+                <span class="metric-value">{{ pomodoro_sessions|length }}</span>
+                <strong>Focus Logs</strong>
+                <span>Recent Pomodoro completions show your consistency at a glance.</span>
+            </article>
+        </section>
+
+        <section class="dashboard-layout fade-up delay-2">
+            <section class="dashboard-main">
+                <section class="dashboard-grid">
+                    <article class="panel list-panel">
+                        <div class="section-heading">
+                            <h2>Your Subjects</h2>
+                            <span class="badge">{{ subjects|length }}</span>
+                        </div>
+                        {% if subjects %}
+                            <ul class="item-list">
+                                {% for subject in subjects %}
+                                    <li>
+                                        <strong>{{ subject.name }}</strong>
+                                        <span>Subject ID: {{ subject.id }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="empty-state">No subjects yet. Add your first subject to get started.</p>
+                        {% endif %}
+                    </article>
+
+                    <article class="panel list-panel">
+                        <div class="section-heading">
+                            <h2>Your Tasks</h2>
+                            <span class="badge">{{ tasks|length }}</span>
+                        </div>
+                        {% if tasks %}
+                            <ul class="item-list">
+                                {% for task in tasks %}
+                                    <li>
+                                        <strong>{{ task.title }}</strong>
+                                        <span>{{ task.subject.name }}</span>
+                                        <span>Deadline: {{ task.deadline or 'No deadline set' }}</span>
+                                        <span>Estimated Hours: {{ task.estimated_hours_per_task }}</span>
+                                        <span>Status: {{ 'Completed' if task.is_completed else 'Pending' }}</span>
+                                        <div class="actions compact-actions">
+                                            <a class="button button-secondary" href="{{ url_for('edit_task', task_id=task.id) }}">Edit Task</a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="empty-state">No tasks yet. Add a task and it will show up here.</p>
+                        {% endif %}
+                    </article>
+                </section>
+
+                <section class="panel list-panel">
+                    <div class="section-heading">
+                        <h2>Recent Pomodoro Sessions</h2>
+                        <span class="badge">{{ pomodoro_sessions|length }}</span>
+                    </div>
+                    {% if pomodoro_sessions %}
+                        <ul class="item-list session-list">
+                            {% for session in pomodoro_sessions %}
+                                <li>
+                                    <strong>{{ session.mode|capitalize }} Session</strong>
+                                    <span>{{ (session.duration_seconds // 60) }} minute{% if (session.duration_seconds // 60) != 1 %}s{% endif %}</span>
+                                    <span>{{ session.completed_at }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty-state">No completed Pomodoro sessions yet.</p>
+                    {% endif %}
+                </section>
+
+                <section class="panel ai-response-panel">
+                    <div class="section-heading">
+                        <h2>AI Plan Update</h2>
+                    </div>
+                    <p class="lead">Get a study suggestion based on your tasks and tracked study time.</p>
+                    <div class="actions compact-actions">
+                        <button class="button button-primary" type="button" id="ai-plan-btn">Generate Update</button>
+                    </div>
+                    <div class="response-card" id="ai-plan-output">
+                        <p>Your AI update will appear here.</p>
+                    </div>
+                </section>
+
+                <section class="panel list-panel">
+                    <div class="section-heading">
+                        <h2>Recent Study Sessions</h2>
+                        <span class="badge">{{ sessions|length }}</span>
+                    </div>
+                    {% if sessions %}
+                        <ul class="item-list session-list">
+                            {% for session in sessions %}
+                                <li>
+                                    <strong>{{ session.subject.name }}</strong>
+                                    <span>{{ session.minutes }} minute{% if session.minutes != 1 %}s{% endif %}</span>
+                                    <span>{{ session.studied_at }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty-state">No study sessions saved yet. Start your first study session above.</p>
+                    {% endif %}
+                </section>
+            </section>
+
+            <aside class="dashboard-sidebar">
+                <article class="panel list-panel sticky-panel">
+                    <div class="section-heading">
+                        <h2>Study Time Tracking</h2>
+                    </div>
+                    <div class="form-stack">
+                        <label for="study-subject">Choose subject</label>
+                        <select id="study-subject">
+                            <option value="">Select a subject</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if active_session and active_session.subject_id == subject.id %}selected{% endif %}>{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="timer-display" id="study-timer">00:00</div>
+
+                        <div class="actions compact-actions">
+                            <button class="button button-primary" type="button" id="start-study-btn">Start Study</button>
+                            <button class="button button-secondary" type="button" id="stop-study-btn">Stop and Save</button>
+                        </div>
+
+                        <p class="helper-text" id="study-status">
+                            {% if active_session %}
+                                Active session restored for {{ active_session.subject.name }}.
+                            {% else %}
+                                Pick a subject, then start your session.
+                            {% endif %}
+                        </p>
+                    </div>
+                </article>
+
+                <article class="panel list-panel sticky-panel">
+                    <div class="section-heading">
+                        <h2>Pomodoro Timer</h2>
+                    </div>
+                    <div class="pomodoro-box">
+                        <div class="timer-display" id="pomodoro-timer">60:00</div>
+                        <p class="helper-text" id="pomodoro-status">
+                            {% if active_pomodoro %}
+                                Restored {{ active_pomodoro.mode }} session.
+                            {% else %}
+                                Focus session ready: 60 minutes.
+                            {% endif %}
+                        </p>
+                        <div class="actions compact-actions">
+                            <button class="button button-primary" type="button" id="start-pomodoro-btn">Start Pomodoro</button>
+                            <button class="button button-secondary" type="button" id="reset-pomodoro-btn">Reset</button>
+                        </div>
+                    </div>
+                </article>
+            </aside>
+        </section>
+    </main>
+
+    <script>
+        const studySubject = document.getElementById("study-subject");
+        const studyTimer = document.getElementById("study-timer");
+        const studyStatus = document.getElementById("study-status");
+        const startStudyBtn = document.getElementById("start-study-btn");
+        const stopStudyBtn = document.getElementById("stop-study-btn");
+        let studySeconds = 0;
+        let studyInterval = null;
+        let activeStudySession = {{ 'true' if active_session else 'false' }};
+
+        function formatTime(totalSeconds) {
+            const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+            const seconds = String(totalSeconds % 60).padStart(2, "0");
+            return `${minutes}:${seconds}`;
+        }
+
+        startStudyBtn?.addEventListener("click", () => {
+            if (!studySubject.value) {
+                studyStatus.textContent = "Choose a subject before starting.";
+                return;
+            }
+            if (studyInterval) {
+                return;
+            }
+            const formData = new FormData();
+            formData.append("subject_id", studySubject.value);
+            fetch("{{ url_for('start_study_session') }}", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                studyStatus.textContent = data.message;
+                activeStudySession = true;
+                const startedAt = new Date(data.started_at.replace(" ", "T"));
+                clearInterval(studyInterval);
+                studyInterval = setInterval(() => {
+                    studySeconds = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
+                    studyTimer.textContent = formatTime(studySeconds);
+                }, 1000);
+            });
+        });
+
+        stopStudyBtn?.addEventListener("click", async () => {
+            if (!studyInterval && studySeconds === 0) {
+                studyStatus.textContent = "No study session is running yet.";
+                return;
+            }
+
+            clearInterval(studyInterval);
+            studyInterval = null;
+
+            const minutes = Math.max(1, Math.round(studySeconds / 60));
+            const formData = new FormData();
+            formData.append("subject_id", studySubject.value);
+            formData.append("minutes", String(minutes));
+
+            const response = await fetch("{{ url_for('save_study_session') }}", {
+                method: "POST",
+                body: formData
+            });
+            const data = await response.json();
+            studyStatus.textContent = data.message;
+            if (data.ok) {
+                activeStudySession = false;
+                studySubject.value = "";
+                studySeconds = 0;
+                studyTimer.textContent = "00:00";
+                window.setTimeout(() => window.location.reload(), 800);
+            }
+        });
+
+        const pomodoroTimer = document.getElementById("pomodoro-timer");
+        const pomodoroStatus = document.getElementById("pomodoro-status");
+        const startPomodoroBtn = document.getElementById("start-pomodoro-btn");
+        const resetPomodoroBtn = document.getElementById("reset-pomodoro-btn");
+        let pomodoroSeconds = 60 * 60;
+        let pomodoroMode = "focus";
+        let pomodoroInterval = null;
+        let activePomodoroSession = {{ 'true' if active_pomodoro else 'false' }};
+
+        function refreshPomodoro() {
+            pomodoroTimer.textContent = formatTime(pomodoroSeconds);
+            pomodoroStatus.textContent = pomodoroMode === "focus"
+                ? "Focus session running: 60 minutes."
+                : "Break time running: 10 minutes.";
+        }
+
+        startPomodoroBtn?.addEventListener("click", () => {
+            if (pomodoroInterval) {
+                return;
+            }
+            const formData = new FormData();
+            formData.append("mode", pomodoroMode);
+            fetch("{{ url_for('start_pomodoro_session') }}", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                activePomodoroSession = true;
+                const startedAt = new Date(data.started_at.replace(" ", "T"));
+                const durationSeconds = data.duration_seconds;
+                clearInterval(pomodoroInterval);
+                pomodoroInterval = setInterval(() => {
+                    const elapsed = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
+                    pomodoroSeconds = Math.max(durationSeconds - elapsed, 0);
+                    pomodoroTimer.textContent = formatTime(pomodoroSeconds);
+
+                    if (pomodoroSeconds <= 0) {
+                        const completedMode = pomodoroMode;
+                        const completedDuration = durationSeconds;
+                        const completeData = new FormData();
+                        completeData.append("mode", completedMode);
+                        completeData.append("duration_seconds", String(completedDuration));
+                        fetch("{{ url_for('complete_pomodoro_session') }}", {
+                            method: "POST",
+                            body: completeData
+                        });
+                        clearInterval(pomodoroInterval);
+                        pomodoroInterval = null;
+                        if (pomodoroMode === "focus") {
+                            pomodoroMode = "break";
+                            pomodoroSeconds = 10 * 60;
+                            pomodoroStatus.textContent = "Focus complete. Start your 10 minute break.";
+                        } else {
+                            pomodoroMode = "focus";
+                            pomodoroSeconds = 60 * 60;
+                            pomodoroStatus.textContent = "Break complete. Ready for another 60 minute focus session.";
+                        }
+                        pomodoroTimer.textContent = formatTime(pomodoroSeconds);
+                    }
+                }, 1000);
+            });
+        });
+
+        resetPomodoroBtn?.addEventListener("click", async () => {
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = null;
+            pomodoroMode = "focus";
+            pomodoroSeconds = 60 * 60;
+            activePomodoroSession = false;
+            await fetch("{{ url_for('reset_pomodoro_session') }}", {
+                method: "POST"
+            });
+            refreshPomodoro();
+        });
+
+        const aiPlanBtn = document.getElementById("ai-plan-btn");
+        const aiPlanOutput = document.getElementById("ai-plan-output");
+
+        aiPlanBtn?.addEventListener("click", async () => {
+            aiPlanOutput.innerHTML = "<p>Generating your update...</p>";
+            const response = await fetch("{{ url_for('ai_plan_update') }}", {
+                method: "POST"
+            });
+            const data = await response.json();
+            aiPlanOutput.innerHTML = `<p>${data.message}</p>`;
+        });
+
+        async function restoreStudySession() {
+            if (!activeStudySession) {
+                return;
+            }
+            const response = await fetch("{{ url_for('active_study_session') }}");
+            const data = await response.json();
+            if (!data.active) {
+                return;
+            }
+            studySubject.value = String(data.subject_id);
+            studyStatus.textContent = `Active session restored for ${data.subject}.`;
+            const startedAt = new Date(data.started_at.replace(" ", "T"));
+            clearInterval(studyInterval);
+            studyInterval = setInterval(() => {
+                studySeconds = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
+                studyTimer.textContent = formatTime(studySeconds);
+            }, 1000);
+        }
+
+        async function restorePomodoroSession() {
+            if (!activePomodoroSession) {
+                return;
+            }
+            const response = await fetch("{{ url_for('active_pomodoro_session') }}");
+            const data = await response.json();
+            if (!data.active) {
+                return;
+            }
+
+            pomodoroMode = data.mode;
+            const startedAt = new Date(data.started_at.replace(" ", "T"));
+            const durationSeconds = data.duration_seconds;
+            pomodoroStatus.textContent = data.mode === "focus"
+                ? "Restored focus session."
+                : "Restored break session.";
+
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = setInterval(() => {
+                const elapsed = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
+                pomodoroSeconds = Math.max(durationSeconds - elapsed, 0);
+                pomodoroTimer.textContent = formatTime(pomodoroSeconds);
+
+                if (pomodoroSeconds <= 0) {
+                    const completedMode = pomodoroMode;
+                    const completedDuration = durationSeconds;
+                    const completeData = new FormData();
+                    completeData.append("mode", completedMode);
+                    completeData.append("duration_seconds", String(completedDuration));
+                    fetch("{{ url_for('complete_pomodoro_session') }}", {
+                        method: "POST",
+                        body: completeData
+                    });
+                    clearInterval(pomodoroInterval);
+                    pomodoroInterval = null;
+                    if (pomodoroMode === "focus") {
+                        pomodoroMode = "break";
+                        pomodoroSeconds = 10 * 60;
+                        pomodoroStatus.textContent = "Focus complete. Start your 10 minute break.";
+                    } else {
+                        pomodoroMode = "focus";
+                        pomodoroSeconds = 60 * 60;
+                        pomodoroStatus.textContent = "Break complete. Ready for another 60 minute focus session.";
+                    }
+                    pomodoroTimer.textContent = formatTime(pomodoroSeconds);
+                }
+            }, 1000);
+        }
+
+        refreshPomodoro();
+        restoreStudySession();
+        restorePomodoroSession();
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="hero hero-home">
+        <section class="panel hero-copy fade-up">
+            <p class="eyebrow">TutorAi</p>
+            <h1>Build a <span class="hero-highlight">future-ready study system</span> for every subject.</h1>
+            <p class="lead">TutorAi combines planning, AI assistance, PDF note analysis, Pomodoro timing, and study tracking inside one sleek command center.</p>
+            <div class="chip-row">
+                <span class="chip">AI Coaching</span>
+                <span class="chip">Smart Planner</span>
+                <span class="chip">Focus Timer</span>
+                <span class="chip">Notes Intelligence</span>
+            </div>
+            <div class="actions">
+                <a class="button button-primary" href="{{ url_for('signup') }}">Create Account</a>
+                <a class="button button-secondary" href="{{ url_for('login') }}">Log In</a>
+            </div>
+        </section>
+        <section class="panel stats-card fade-up delay-1">
+            <p class="surface-label">System Modules</p>
+            <h2>What you can do</h2>
+            <div class="stat-grid">
+                <article>
+                    <span class="stat-number">01</span>
+                    <h3>Control every subject</h3>
+                    <p>Separate Math, Science, English, or any course into focused learning spaces.</p>
+                </article>
+                <article>
+                    <span class="stat-number">02</span>
+                    <h3>Plan with precision</h3>
+                    <p>Turn assignments, deadlines, and revision goals into visible next actions.</p>
+                </article>
+                <article>
+                    <span class="stat-number">03</span>
+                    <h3>Stay in momentum</h3>
+                    <p>Use AI, timers, and tracked sessions to keep progress measurable every day.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

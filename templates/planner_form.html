@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Planner | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="single-panel-layout">
+        <section class="panel form-panel wide-panel fade-up">
+            <p class="eyebrow">Smart Planner</p>
+            <h1>Generate your study timetable</h1>
+            <p class="lead">Tell TutorAi how many hours you can study each day, and it will spread your tasks across upcoming days based on deadlines.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="post" class="form-stack">
+                <label for="daily_hours">Daily available hours</label>
+                <input id="daily_hours" name="daily_hours" type="number" min="1" step="1" placeholder="Example: 3" required>
+
+                <div class="actions">
+                    <button class="button button-primary" type="submit">Generate Planner</button>
+                    <a class="button button-secondary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

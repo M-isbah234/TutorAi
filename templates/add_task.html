@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Task | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="single-panel-layout">
+        <section class="panel form-panel wide-panel fade-up">
+            <p class="eyebrow">New task</p>
+            <h1>Add a task</h1>
+            <p class="lead">Attach a deadline to a subject and keep the next step visible.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="post" class="form-stack">
+                <label for="title">Task title</label>
+                <input id="title" name="title" type="text" placeholder="Example: Complete chapter 3 notes" required>
+
+                <label for="estimated_hours_per_task">Estimated hours</label>
+                <input id="estimated_hours_per_task" name="estimated_hours_per_task" type="number" min="1" step="1" placeholder="Example: 2" required>
+
+                <label for="deadline">Deadline</label>
+                <input id="deadline" name="deadline" type="date">
+
+                <label for="subject_id">Subject</label>
+                <select id="subject_id" name="subject_id" required>
+                    <option value="">Select a subject</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+
+                {% if not subjects %}
+                    <p class="helper-text">You need at least one subject before creating a task.</p>
+                {% endif %}
+
+                <div class="actions">
+                    <button class="button button-primary" type="submit" {% if not subjects %}disabled{% endif %}>Save Task</button>
+                    <a class="button button-secondary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

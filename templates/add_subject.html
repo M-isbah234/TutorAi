@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Subject | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="single-panel-layout">
+        <section class="panel form-panel wide-panel fade-up">
+            <p class="eyebrow">New subject</p>
+            <h1>Add a subject</h1>
+            <p class="lead">Create a subject to group assignments and revision tasks.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="post" class="form-stack">
+                <label for="name">Subject name</label>
+                <input id="name" name="name" type="text" placeholder="Example: Mathematics" required>
+
+                <div class="actions">
+                    <button class="button button-primary" type="submit">Save Subject</button>
+                    <a class="button button-secondary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

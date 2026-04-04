@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Plans | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="dashboard-shell planner-shell">
+        <section class="dashboard-topbar panel fade-up">
+            <div>
+                <p class="eyebrow">Saved Plans</p>
+                <h1>Your previously generated timetables</h1>
+                <p class="lead">Open any saved plan instead of generating it again.</p>
+            </div>
+            <div class="actions">
+                <a class="button button-secondary" href="{{ url_for('planner') }}">Generate New Planner</a>
+                <a class="button button-primary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+            </div>
+        </section>
+
+        <section class="panel list-panel fade-up delay-1">
+            <div class="section-heading">
+                <h2>Saved Planner History</h2>
+                <span class="badge">{{ plans|length }}</span>
+            </div>
+            {% if plans %}
+                <ul class="item-list">
+                    {% for plan in plans %}
+                        <li class="saved-plan-card">
+                            <strong>{{ plan.title }}</strong>
+                            <span>Created: {{ plan.created_at }}</span>
+                            <span>Daily Hours: {{ plan.daily_hours }}</span>
+                            <span>Entries: {{ plan.entries|length }}</span>
+                            <div class="actions compact-actions">
+                                <a class="button button-primary" href="{{ url_for('saved_plan_detail', plan_id=plan.id) }}">Open Plan</a>
+                                <a class="button button-secondary" href="{{ url_for('export_saved_plan', plan_id=plan.id) }}">Export JSON</a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty-state">No saved plans yet. Generate a planner and it will appear here.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

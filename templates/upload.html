@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Notes | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='cyber-refresh-1') }}">
+</head>
+<body class="app-shell">
+    <main class="dashboard-shell ai-shell">
+        <section class="dashboard-topbar panel fade-up">
+            <div>
+                <p class="eyebrow">Upload Notes</p>
+                <h1>Upload notes and let AI study them</h1>
+                <p class="lead">TutorAi can read PDFs, typed notes, scanned pages, and handwritten notes from images.</p>
+            </div>
+            <div class="actions">
+                <a class="button button-secondary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+            </div>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <section class="flash-row">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        {% endwith %}
+
+        <section class="ai-grid">
+            <section class="panel form-panel ai-panel fade-up delay-1">
+                <h2>Choose your notes file</h2>
+                <form method="post" enctype="multipart/form-data" class="form-stack">
+                    <label for="file">PDF or image notes file</label>
+                    <input id="file" name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp" required>
+
+                    <div class="actions">
+                        <button class="button button-primary" type="submit">Upload and Analyze</button>
+                    </div>
+                </form>
+            </section>
+
+            <aside class="panel ai-side-panel fade-up delay-2">
+                <h2>What you will get</h2>
+                <ul class="item-list">
+                    <li>
+                        <strong>Summary</strong>
+                        <span>A compact explanation of the uploaded notes.</span>
+                    </li>
+                    <li>
+                        <strong>Handwritten Support</strong>
+                        <span>Images and scanned notes can be read when the handwriting is reasonably clear.</span>
+                    </li>
+                    <li>
+                        <strong>Key Points</strong>
+                        <span>The most important concepts pulled out clearly.</span>
+                    </li>
+                    <li>
+                        <strong>Quiz Questions</strong>
+                        <span>Quick revision questions based on the PDF content.</span>
+                    </li>
+                </ul>
+            </aside>
+        </section>
+
+        {% if result %}
+            <section class="panel ai-response-panel fade-up delay-3">
+                <h2>AI Output</h2>
+                <div class="response-card">
+                    <p>{{ result }}</p>
+                </div>
+            </section>
+        {% endif %}
+    </main>
+</body>
+</html>

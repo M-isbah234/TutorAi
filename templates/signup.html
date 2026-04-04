@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="auth-layout">
+        <section class="panel auth-copy fade-up">
+            <p class="eyebrow">Get started</p>
+            <h1>Create your TutorAi account.</h1>
+            <p class="lead">Set up your study space, then start organizing subjects and tasks right away.</p>
+            <a class="text-link" href="{{ url_for('home') }}">Back to home</a>
+        </section>
+        <section class="panel form-panel fade-up delay-1">
+            <h2>Sign up</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form method="post" class="form-stack">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" value="{{ username|default('') }}" required>
+
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" required>
+
+                <button class="button button-primary" type="submit">Create Account</button>
+            </form>
+            <p class="helper-text">Already registered? <a class="text-link" href="{{ url_for('login') }}">Log in</a></p>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='cyber-refresh-1') }}">
+</head>
+<body class="app-shell">
+    <main class="dashboard-shell ai-shell">
+        <section class="dashboard-topbar panel fade-up">
+            <div>
+                <p class="eyebrow">AI Assistant</p>
+                <h1>TutorAi AI Lab</h1>
+                <p class="lead">Ask for explanations, summaries, quizzes, revision plans, and concept breakdowns in one place with Gemini.</p>
+            </div>
+            <div class="actions">
+                <a class="button button-secondary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+            </div>
+        </section>
+
+        <section class="ai-grid">
+            <section class="panel form-panel ai-panel fade-up delay-1">
+                <h2>Ask a study question</h2>
+                <form method="post" class="form-stack">
+                    <input type="hidden" name="action" value="ask">
+                    <label for="question">Your question</label>
+                    <textarea id="question" name="question" rows="7" placeholder="Example: Explain Newton's laws in simple words." required>{{ request.form.get('question', '') }}</textarea>
+
+                    <div class="actions">
+                        <button class="button button-primary" type="submit">Ask AI</button>
+                    </div>
+                </form>
+
+                {% if chat_turns %}
+                    <form method="post" class="actions compact-actions">
+                        <input type="hidden" name="action" value="clear">
+                        <button class="button button-secondary" type="submit">Clear Chat</button>
+                    </form>
+                {% endif %}
+            </section>
+
+            <aside class="panel ai-side-panel fade-up delay-2">
+                <h2>Connection Status</h2>
+                {% if api_key_configured %}
+                    <div class="flash flash-success">Connection successful.</div>
+                {% else %}
+                    <div class="flash flash-error">Connection failed.</div>
+                    <p class="helper-text">TutorAi could not access the AI service configuration. Check the server setup and try again.</p>
+                {% endif %}
+            </aside>
+        </section>
+
+        {% if chat_turns %}
+            <section class="panel ai-response-panel fade-up delay-3">
+                <h2>Conversation</h2>
+                <div class="item-list">
+                    {% for turn in chat_turns %}
+                        <div class="response-card">
+                            <p><strong>You</strong></p>
+                            <p>{{ turn.question }}</p>
+                        </div>
+                        <div class="response-card">
+                            <p><strong>TutorAi</strong></p>
+                            <p>{{ turn.answer }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    </main>
+</body>
+</html>

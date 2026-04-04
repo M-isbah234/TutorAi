@@ -1,0 +1,9 @@
+Flask
+Flask-Login
+Flask-SQLAlchemy
+google-genai
+PyPDF2
+python-dotenv
+SQLAlchemy
+starlette
+

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Planner | TutorAi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-shell">
+    <main class="dashboard-shell planner-shell">
+        <section class="dashboard-topbar panel fade-up">
+            <div>
+                <p class="eyebrow">Smart Planner</p>
+                <h1>Your timetable is ready</h1>
+                <p class="lead">Built using {{ daily_hours }} hour{% if daily_hours != 1 %}s{% endif %} per day.</p>
+                {% if saved_plan %}
+                    <p class="helper-text">Saved as {{ saved_plan.title }}{% if saved_plan.created_at %} on {{ saved_plan.created_at }}{% endif %}.</p>
+                {% endif %}
+            </div>
+            <div class="actions">
+                <a class="button button-secondary" href="{{ url_for('planner') }}">Try Different Hours</a>
+                <a class="button button-secondary" href="{{ url_for('saved_plans') }}">Saved Plans</a>
+                {% if saved_plan %}
+                    <a class="button button-secondary" href="{{ url_for('export_saved_plan', plan_id=saved_plan.id) }}">Export Plan</a>
+                {% endif %}
+                <a class="button button-primary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+            </div>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <section class="flash-row">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        {% endwith %}
+
+        <section class="panel planner-panel fade-up delay-1">
+            {% if plan %}
+                <div class="planner-table">
+                    <div class="planner-head">Date</div>
+                    <div class="planner-head">Study Plan</div>
+                    <div class="planner-head">Daily Summary</div>
+
+                    {% for day in plan %}
+                        <div class="planner-cell planner-date">{{ day.date }}</div>
+                        <div class="planner-cell">
+                            {% for item in day.entries %}
+                                <div class="planner-task">
+                                    <strong>{{ item.task_title }}</strong>
+                                    <span>{{ item.subject_name }}</span>
+                                    <span>{{ item.hours }} hour{% if item.hours != 1 %}s{% endif %} scheduled</span>
+                                    <span>Deadline: {{ item.deadline }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="planner-cell planner-summary">
+                            <span>Used: {{ day.used_hours }} hour{% if day.used_hours != 1 %}s{% endif %}</span>
+                            <span>Free: {{ day.remaining_hours }} hour{% if day.remaining_hours != 1 %}s{% endif %}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">No planner rows were generated. Add tasks and try again.</p>
+            {% endif %}
+        </section>
+
+        {% if unscheduled_tasks %}
+            <section class="panel planner-warning fade-up delay-2">
+                <h2>Tasks that need more time</h2>
+                <ul class="item-list">
+                    {% for task in unscheduled_tasks %}
+                        <li>
+                            <strong>{{ task.title }}</strong>
+                            <span>{{ task.subject_name }}</span>
+                            <span>Deadline: {{ task.deadline }}</span>
+                            <span>Extra hours needed: {{ task.missing_hours }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    </main>
+</body>
+</html>
