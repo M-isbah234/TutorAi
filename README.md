@@ -2,10 +2,10 @@ TutorAi is a Flask study planner that helps students manage subjects, tasks, and
 
 Functionality;
 
-lets users sign up and log in securely
-tracks subjects, tasks, and deadlines
-builds daily study plans from pending tasks
-saves study plans and progress history
-records study sessions and Pomodoro focus sessions
-AI-assisted study guidance chatbot
-analyzes uploaded notes (PDF/image) using Gemini AI
+1. Lets users sign up and log in securely
+2. Tracks subjects, tasks, and deadlines
+3. Builds daily study plans from pending tasks
+4. Saves study plans and progress history
+5. Records study sessions and Pomodoro focus sessions
+6. AI-assisted study guidance chatbot
+7. Analyzes uploaded notes (PDF/image) using Gemini AI
